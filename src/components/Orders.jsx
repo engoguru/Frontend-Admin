@@ -189,7 +189,7 @@ const Orders = () => {
                                         ₹{typeof item.price === 'number' ? item.price.toFixed(2) : 'N/A'}
                                     </td>
                                     <td className="py-2 px-4 border">
-                                        {item.quantity || 'N/A'}
+                                        {item.quantity || 'N/A'}       
                                     </td>
                                     <td className="py-2 px-4 border">{item.paymentId}</td>
                                     <td className="py-2 px-4 border">{item.paymentMethod}</td>
