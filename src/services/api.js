@@ -2,6 +2,32 @@ const API_BASE_URL = 'http://localhost:5002'; // Make sure this matches your bac
 const API_BASE_URL_USER = 'http://localhost:5000'; // User service
 
 /**
+ * Authenticates an admin user.
+ * @param {object} credentials - The admin's credentials.
+ * @param {string} credentials.email - The admin's email.
+ * @param {string} credentials.password - The admin's password.
+ * @returns {Promise<any>} - The JSON response from the API.
+ */
+export const adminLogin = async (credentials) => {
+    try {
+        const response = await fetch(`${API_BASE_URL_USER}/api/users/account/admin/login`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(credentials),
+        });
+        const data = await response.json();
+        if (!response.ok) {
+            throw new Error(data.message || 'Login failed.');
+        }
+        return data;
+    } catch (error) {
+        console.error('Error during admin login:', error);
+        throw error;
+    }
+};
+/**
  * Creates a new product by sending a POST request to the backend.
  * @param {FormData} formData - The product data to be submitted.
  * @returns {Promise<any>} - The JSON response from the API.

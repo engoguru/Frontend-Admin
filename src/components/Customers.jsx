@@ -1,32 +1,86 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
+import Pagination from './Pagination'; // Assuming Pagination.jsx is in the same folder
 
 const Customers = () => {
-  const [customers, setCustomers] = useState([
-    // Mock data
-    { id: 1, name: 'John Doe', email: 'john@example.com', whatsApp_Number: '1234567890', role: 'User', isVerified: true },
-    { id: 2, name: 'Jane Smith', email: 'jane@example.com', whatsApp_Number: '9876543210', role: 'User', isVerified: false },
-    { id: 3, name: 'Sam Wilson', email: 'sam@example.com', whatsApp_Number: '5554443333', role: 'Admin', isVerified: true },
-    { id: 4, name: 'Alice Johnson', email: 'alice@example.com', whatsApp_Number: '1112223333', role: 'User', isVerified: true },
-    { id: 5, name: 'Bob Brown', email: 'bob@example.com', whatsApp_Number: '4445556666', role: 'User', isVerified: false },
-    { id: 6, name: 'Charlie Davis', email: 'charlie@example.com', whatsApp_Number: '7778889999', role: 'User', isVerified: true },
-    { id: 7, name: 'Diana Evans', email: 'diana@example.com', whatsApp_Number: '1231231234', role: 'User', isVerified: true },
-    { id: 8, name: 'Frank Green', email: 'frank@example.com', whatsApp_Number: '4564564567', role: 'Admin', isVerified: false },
-    { id: 9, name: 'Grace Hall', email: 'grace@example.com', whatsApp_Number: '7897897890', role: 'User', isVerified: true },
-    { id: 10, name: 'Henry Irving', email: 'henry@example.com', whatsApp_Number: '9879879876', role: 'User', isVerified: false },
-  ]);
+  const [customers, setCustomers] = useState([]);
+  const navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState('');
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [sortBy, setSortBy] = useState('latest');
+  const [totalPages, setTotalPages] = useState(1);
+  const [itemsPerPage, setItemsPerPage] = useState(10);
+
+  useEffect(() => {
+    const fetchCustomers = async () => {
+      setIsLoading(true);
+      try {
+        const response = await fetch(`http://localhost:5000/api/users/account/GetAll?page=${currentPage}&limit=${itemsPerPage}&sort=${sortBy}`);
+        if (!response.ok) {
+          throw new Error('Network response was not ok');
+        }
+        const data = await response.json();
+        setCustomers(data.users);
+        setTotalPages(data.totalPages);
+        setCurrentPage(data.currentPage);
+      } catch (err) {
+        setError(err.message);
+        console.error("Failed to fetch customers:", err);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchCustomers();
+  }, [currentPage, itemsPerPage, sortBy]);
+
+  const handlePageChange = (page) => {
+    setCurrentPage(page);
+  };
+
+  const handleItemsPerPageChange = (limit) => {
+    setItemsPerPage(limit);
+    setCurrentPage(1); // Reset to first page
+  };
+
+  const handleViewClick = (customerId) => {
+    navigate(`/customers/${customerId}`);
+  };
 
   const filteredCustomers = customers.filter(customer =>
     (customer.name && customer.name.toLowerCase().includes(searchTerm.toLowerCase())) ||
     (customer.email && customer.email.toLowerCase().includes(searchTerm.toLowerCase())) ||
-    (customer.whatsApp_Number && customer.whatsApp_Number.includes(searchTerm))
+    (customer.whatsApp_Number && customer.whatsApp_Number.includes(searchTerm)) ||
+    (customer.contactNumber && customer.contactNumber.includes(searchTerm)) ||
+    (customer.address && Array.isArray(customer.address) && customer.address.join(' ').toLowerCase().includes(searchTerm.toLowerCase()))
   );
+
+  if (isLoading) {
+    return <div className="p-8 text-center text-lg">Loading customers...</div>;
+  }
+
+  if (error) {
+    return <div className="p-8 text-center text-lg text-red-500">Error: {error}</div>;
+  }
 
   return (
     <div className="relative flex flex-col h-full">
       <div className="flex justify-between items-center pt-8 px-8 pb-4 flex-shrink-0 flex-wrap gap-4">
         <h2 className="text-2xl font-semibold">Customers</h2>
-        <div className="flex items-center">
+        <div className="flex items-center space-x-4">
+          <select
+            value={sortBy}
+            onChange={(e) => setSortBy(e.target.value)}
+            className="border px-3 py-2 rounded-md focus:outline-none bg-white"
+          >
+            <option value="latest">Sort by Latest</option>
+            <option value="oldest">Sort by Oldest</option>
+            <option value="a-z">Sort by A-Z</option>
+            <option value="z-a">Sort by Z-A</option>
+          </select>
+
           <input
             type="text"
             placeholder="Search by name, email..."
@@ -48,6 +102,8 @@ const Customers = () => {
                 <th className="py-2 px-4 border">Name</th>
                 <th className="py-2 px-4 border">Email</th>
                 <th className="py-2 px-4 border">WhatsApp Number</th>
+                <th className="py-2 px-4 border">Contact Number</th>
+                <th className="py-2 px-4 border">Address</th>
                 <th className="py-2 px-4 border">Role</th>
                 <th className="py-2 px-4 border">Verified</th>
                 <th className="py-2 px-4 border">Actions</th>
@@ -55,11 +111,13 @@ const Customers = () => {
             </thead>
             <tbody>
               {filteredCustomers.length > 0 ? filteredCustomers.map((customer, index) => (
-                <tr key={customer.id} className="text-center">
-                  <td className="py-2 px-4 border">{index + 1}</td>
+                <tr key={customer._id} className="text-center">
+                  <td className="py-2 px-4 border">{(currentPage - 1) * itemsPerPage + index + 1}</td>
                   <td className="py-2 px-4 border">{customer.name}</td>
                   <td className="py-2 px-4 border">{customer.email}</td>
                   <td className="py-2 px-4 border">{customer.whatsApp_Number}</td>
+                  <td className="py-2 px-4 border">{customer.contactNumber}</td>
+                  <td className="py-2 px-4 border">{Array.isArray(customer.address) ? customer.address.join(', ') : ''}</td>
                   <td className="py-2 px-4 border">{customer.role}</td>
                   <td className="py-2 px-4 border">
                     <span className={`px-2 py-1 text-xs font-semibold rounded-full ${
@@ -69,24 +127,34 @@ const Customers = () => {
                     </span>
                   </td>
                   <td className="py-2 px-4 border space-x-2">
-                    <button className="bg-blue-500 text-white px-2 py-1 rounded hover:bg-blue-600">
+                    <button
+                      onClick={() => handleViewClick(customer._id)}
+                      className="bg-blue-500 text-white px-2 py-1 rounded hover:bg-blue-600"
+                    >
                       View
                     </button>
-                    <button className="bg-yellow-500 text-white px-2 py-1 rounded hover:bg-yellow-600">
+                    {/* <button className="bg-yellow-500 text-white px-2 py-1 rounded hover:bg-yellow-600">
                       Edit
                     </button>
                     <button className="bg-red-500 text-white px-2 py-1 rounded hover:bg-red-600">
                       Delete
-                    </button>
+                    </button> */}
                   </td>
                 </tr>
               )) : (
                 <tr>
-                  <td colSpan="7" className="text-center py-4 text-gray-500">No customers found.</td>
+                  <td colSpan="9" className="text-center py-4 text-gray-500">No customers found.</td>
                 </tr>
               )}
             </tbody>
           </table>
+          <Pagination
+            currentPage={currentPage}
+            totalPages={totalPages}
+            onPageChange={handlePageChange}
+            itemsPerPage={itemsPerPage}
+            onItemsPerPageChange={handleItemsPerPageChange}
+          />
         </div>
       </div>
     </div>

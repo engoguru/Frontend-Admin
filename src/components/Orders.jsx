@@ -1,0 +1,243 @@
+import React, { useState, useEffect, useCallback } from 'react';
+import { useNavigate } from 'react-router-dom';
+import Pagination from './Pagination'; // Assuming Pagination.jsx is in the same folder
+
+// const allMockOrders = Array.from({ length: 25 }, (_, i) => ({
+//     _id: `o${i + 1}`,
+//     productOrderId: `ORD-2023-${String(i + 1).padStart(3, '0')}`,
+//     price: Math.floor(Math.random() * 5000) + 150,
+//     quantity: Math.floor(Math.random() * 3) + 1,
+//     paymentId: `pay_${Math.random().toString(36).substring(2, 11)}`,
+//     paymentStatus: ['Paid', 'Pending', 'Failed'][Math.floor(Math.random() * 3)],
+//     shippingStatus: ['Shipped', 'Processing', 'Delivered', 'Cancelled'][Math.floor(Math.random() * 4)],
+//     createdAt: new Date(new Date() - Math.random() * 30 * 24 * 60 * 60 * 1000), // Random date in the last 30 days
+//     deliveryAddress: `${i + 1}23, Mockingbird Lane, Apt ${i + 1}, Mumbai, Maharashtra, 400001`,
+// }));
+// let mockOrdersDB = [...allMockOrders].sort((a, b) => b.createdAt - a.createdAt); // Default sort by latest
+
+const paymentStatusColors = {
+    Paid: 'bg-green-200 text-green-800',
+    Pending: 'bg-yellow-200 text-yellow-800',
+    Failed: 'bg-red-200 text-red-800',
+};
+
+const shippingStatusColors = {
+    Delivered: 'bg-green-200 text-green-800',
+    Confirmed: 'bg-indigo-200 text-indigo-800',
+    Shipped: 'bg-blue-200 text-blue-800',
+    Processing: 'bg-yellow-200 text-yellow-800',
+    Pending: 'bg-yellow-200 text-yellow-800',
+    Cancelled: 'bg-red-200 text-red-800',
+};
+
+const StatusBadge = ({ text, colorClass }) => (
+    <span className={`px-2 py-1 text-xs font-semibold rounded-full ${colorClass}`}>
+        {text}
+    </span>
+);
+
+
+const Orders = () => {
+    const [orders, setOrders] = useState([]);
+    const navigate = useNavigate();
+    const [searchTerm, setSearchTerm] = useState('');
+    const [isLoading, setIsLoading] = useState(true);
+    const [error, setError] = useState(null);
+    const [currentPage, setCurrentPage] = useState(1);
+    const [sortBy, setSortBy] = useState('latest');
+    const [totalPages, setTotalPages] = useState(1);
+    const [itemsPerPage, setItemsPerPage] = useState(10);
+
+    const fetchOrders = useCallback(async (page, limit, sort, search) => {
+        setIsLoading(true);
+        setError(null);
+        try {
+            const url = new URL('http://localhost:5000/api/order/orderRoutes/getAll');
+            url.searchParams.append('page', page);
+            url.searchParams.append('itemsPerPage', limit);
+            url.searchParams.append('sort', sort);
+            if (search) {
+                url.searchParams.append('search', search);
+            }
+
+            const response = await fetch(url.toString());
+            if (!response.ok) {
+                throw new Error('Network response was not ok');
+            }
+            const data = await response.json();
+            setOrders(data.data || []);
+            setTotalPages(data.totalPages || 1);
+            setCurrentPage(data.page || 1);
+        } catch (err) {
+            setError(err.message);
+            console.error("Failed to fetch orders:", err);
+        } finally {
+            setIsLoading(false);
+        }
+    }, []); // Empty dependency array as it doesn't depend on component state
+
+    useEffect(() => {
+        // Use a timeout to debounce the search API call
+        const handler = setTimeout(() => fetchOrders(currentPage, itemsPerPage, sortBy, searchTerm), 500);
+        return () => clearTimeout(handler);
+    }, [fetchOrders, currentPage, itemsPerPage, sortBy, searchTerm]);
+
+    const handlePageChange = (page) => {
+        setCurrentPage(page);
+    };
+
+    const handleItemsPerPageChange = (limit) => {
+        setItemsPerPage(limit);
+        setCurrentPage(1); // Reset to first page
+    };
+
+    const handleViewClick = (orderId) => {
+        navigate(`/orders/${orderId}`); // Adjust route as needed
+    };
+
+    const handleEditClick = (orderId) => {
+        // In a real app, this would navigate to an edit page or open a modal
+        alert(`Editing order: ${orderId}`);
+        // navigate(`/orders/edit/${orderId}`);
+    };
+
+    const handleDeleteClick = (orderId) => {
+        if (window.confirm('Are you sure you want to delete this order?')) {
+            // In a real app, you would call an API to delete the order
+            // For now, we'll just refetch to simulate.
+            // Example: deleteOrderAPI(orderId).then(() => fetchOrders(...));
+            // mockOrdersDB = mockOrdersDB.filter(order => order._id !== orderId);
+            fetchOrders(currentPage, itemsPerPage, sortBy, searchTerm); // Refetch to reflect the deletion
+            alert(`Order ${orderId} deleted.`);
+        }
+    };
+
+    // Flatten orders to display one row per item
+    const flattenedOrders = orders.flatMap(order =>
+        (order.items && order.items.length > 0) ?
+        order.items.map(item => ({
+            ...order, // Spread order properties
+            ...item,  // Spread item properties (like productName, quantity, price)
+            order_id: order._id, // Keep original order ID
+            uniqueRowKey: `${order._id}-${item.productId}-${item.size || ''}`, // Create a unique key for the row
+        }))
+        : [] // If an order has no items, it won't be displayed
+    );
+    
+    if (isLoading) {
+        return <div className="p-8 text-center text-lg">Loading orders...</div>;
+    }
+
+    if (error) {
+        return <div className="p-8 text-center text-lg text-red-500">Error: {error}</div>;
+    }
+
+    return (
+        <div className="relative flex flex-col h-full">
+            <div className="flex justify-between items-center pt-8 px-8 pb-4 flex-shrink-0 flex-wrap gap-4">
+                <h2 className="text-2xl font-semibold">Orders</h2>
+                <div className="flex items-center space-x-4">
+                    <select
+                        value={sortBy}
+                        onChange={(e) => setSortBy(e.target.value)}
+                        className="border px-3 py-2 rounded-md focus:outline-none bg-white"
+                    >
+                        <option value="latest">Sort by Latest</option>
+                        <option value="oldest">Sort by Oldest</option>
+                        <option value="price-asc">Price: Low to High</option>
+                        <option value="price-desc">Price: High to Low</option>
+                    </select>
+
+                    <input
+                        type="text"
+                        placeholder="Search by Order or Payment ID..."
+                        value={searchTerm}
+                        onChange={(e) => {
+                            setSearchTerm(e.target.value);
+                            setCurrentPage(1); // Reset to first page on new search
+                        }}
+                        className="border px-3 py-2 rounded-md focus:outline-none w-64"
+                    />
+                </div>
+            </div>
+            <div className="flex-1 overflow-auto">
+                <div className="px-8 pb-8">
+                    <table className="min-w-full bg-white border border-gray-300 whitespace-nowrap">
+                        <thead className="bg-gray-100 sticky top-0 z-10">
+                            <tr>
+                                <th className="py-2 px-4 border">Sr No</th>
+                                <th className="py-2 px-4 border">Product</th>
+                                <th className="py-2 px-4 border">Product ID</th>
+                                <th className="py-2 px-4 border">Price</th>
+                                <th className="py-2 px-4 border">Quantity</th>
+                                <th className="py-2 px-4 border">Payment ID</th>
+                                <th className="py-2 px-4 border">Payment Method</th>
+                                <th className="py-2 px-4 border">Payment Status</th>
+                                <th className="py-2 px-4 border">Order  Status</th>
+                                <th className="py-2 px-4 border">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {flattenedOrders.length > 0 ? flattenedOrders.map((item, index) => (
+                                <tr key={item.uniqueRowKey} className="text-center">
+                                    <td className="py-2 px-4 border">
+                                        {(currentPage - 1) * itemsPerPage + index + 1}
+                                    </td>
+                                    <td className="py-2 px-4 border">{item.productName || 'N/A'}</td>
+                                    <td className="py-2 px-4 border">{item.productId || 'N/A'}</td>
+                                    <td className="py-2 px-4 border">
+                                        ₹{typeof item.price === 'number' ? item.price.toFixed(2) : 'N/A'}
+                                    </td>
+                                    <td className="py-2 px-4 border">
+                                        {item.quantity || 'N/A'}
+                                    </td>
+                                    <td className="py-2 px-4 border">{item.paymentId}</td>
+                                    <td className="py-2 px-4 border">{item.paymentMethod}</td>
+                                    <td className="py-2 px-4 border">
+                                        <StatusBadge text={item.paymentStatus} colorClass={paymentStatusColors[item.paymentStatus]} />
+                                    </td>
+                                    <td className="py-2 px-4 border">
+                                        <StatusBadge text={item.orderStatus} colorClass={shippingStatusColors[item.orderStatus]} />
+                                    </td>
+                                    <td className="py-2 px-4 border space-x-2">
+                                        <button
+                                            onClick={() => handleViewClick(item.order_id)}
+                                            className="bg-blue-500 text-white px-2 py-1 rounded hover:bg-blue-600"
+                                        >
+                                            View
+                                        </button>
+                                        <button
+                                            onClick={() => handleEditClick(item.order_id)}
+                                            className="bg-yellow-500 text-white px-2 py-1 rounded hover:bg-yellow-600"
+                                        >
+                                            Edit
+                                        </button>
+                                        <button
+                                            onClick={() => handleDeleteClick(item.order_id)}
+                                            className="bg-red-500 text-white px-2 py-1 rounded hover:bg-red-600"
+                                        >
+                                            Delete
+                                        </button>
+                                    </td>
+                                </tr>
+                            )) : (
+                                <tr>
+                                    <td colSpan="11" className="text-center py-4 text-gray-500">No orders found.</td>
+                                </tr>
+                            )}
+                        </tbody>
+                    </table>
+                    <Pagination
+                        currentPage={currentPage}
+                        totalPages={totalPages}
+                        onPageChange={handlePageChange}
+                        itemsPerPage={itemsPerPage}
+                        onItemsPerPageChange={handleItemsPerPageChange}
+                    />
+                </div>
+            </div>
+        </div>
+    );
+};
+
+export default Orders;

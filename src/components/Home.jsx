@@ -11,13 +11,10 @@ import {
   FaSignOutAlt,
 } from 'react-icons/fa';
 import { RxDashboard } from "react-icons/rx";
+import { useAuth } from '../AuthContext';
 
 const Home = () => {
-  const navigate = useNavigate();
-
-  const handleLogout = () => {
-    navigate('/login');
-  };
+  const { logout } = useAuth();
 
   return (
     <div className="flex h-screen overflow-hidden bg-gray-100">
@@ -51,7 +48,7 @@ const Home = () => {
             Products
           </Link>
           <Link
-            to="#"
+            to="/orders"
             className="flex items-center text-gray-700 hover:text-blue-600 hover:bg-blue-50 px-3 py-2 rounded-md transition"
           >
             <FaShoppingCart className="mr-3" />
@@ -65,7 +62,7 @@ const Home = () => {
             Payments
           </Link>
           <button
-            onClick={handleLogout}
+            onClick={logout}
             className="flex items-center text-gray-700 hover:text-red-600 hover:bg-red-50 px-3 py-2 rounded-md transition w-full text-left"
           >
             <FaSignOutAlt className="mr-3" />

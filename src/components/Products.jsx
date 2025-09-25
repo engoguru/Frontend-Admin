@@ -12,13 +12,14 @@ const Products = () => {
     const [searchTerm, setSearchTerm] = useState('');
     const [currentPage, setCurrentPage] = useState(1);
     const [totalPages, setTotalPages] = useState(0);
+    const [sortBy, setSortBy] = useState('latest');
     const [itemsPerPage, setItemsPerPage] = useState(10);
     const fileInputRef = useRef(null);
 
     const fetchProducts = useCallback(async (page) => {
             try {
                 setIsLoading(true);
-                const result = await getAllProducts(page, itemsPerPage);
+                const result = await getAllProducts(page, itemsPerPage, sortBy);
                 if (result && result.data) {
                     const transformedProducts = result.data.map(product => {
                         let parsedTags = product.productTags;
@@ -54,7 +55,7 @@ const Products = () => {
             } finally {
                 setIsLoading(false);
             }
-    }, [itemsPerPage]);
+    }, [itemsPerPage, sortBy]);
 
     useEffect(() => {
         fetchProducts(currentPage);
@@ -257,6 +258,17 @@ const Products = () => {
             <div className="flex justify-between items-center pt-8 px-8 pb-4 flex-shrink-0 flex-wrap gap-4">
                 <h2 className="text-2xl font-semibold">Products</h2>
                 <div className="flex items-center space-x-4 flex-wrap gap-y-2 justify-end">
+                    <select
+                        value={sortBy}
+                        onChange={(e) => setSortBy(e.target.value)}
+                        className="border px-3 py-2 rounded-md focus:outline-none bg-white"
+                    >
+                        <option value="latest">Sort by Latest</option>
+                        <option value="oldest">Sort by Oldest</option>
+                        <option value="a-z">Sort by A-Z</option>
+                        <option value="z-a">Sort by Z-A</option>
+                    </select>
+
                     {/* Search Bar */}
                     <div className="flex items-center">
                         <input
