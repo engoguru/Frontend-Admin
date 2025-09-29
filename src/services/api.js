@@ -34,7 +34,7 @@ export const adminLogin = async (credentials) => {
  */
 export const createProduct = async (formData) => {
     try {
-        const response = await fetch(`${API_BASE_URL}/productList/create`, {
+        const response = await fetch(`${API_BASE_URL}/productList/Create`, {
             method: 'POST',
             body: formData,
             // For multipart/form-data, the browser sets the 'Content-Type' header automatically with the correct boundary.
