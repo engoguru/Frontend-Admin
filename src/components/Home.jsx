@@ -22,7 +22,7 @@ const Home = () => {
       <aside className="w-64 flex-shrink-0 bg-white shadow-md overflow-y-auto">
         <div className="p-6 text-2xl font-bold border-b border-gray-200">
           <span className="text-black">SPORT</span>
-          <span className="text-red-700">DUNIYA</span>
+          <span className="text-red-700">EXPRESS</span>
         </div>
 
         <nav className="mt-4 flex flex-col space-y-2 px-4">
