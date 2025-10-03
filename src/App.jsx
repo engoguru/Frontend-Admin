@@ -1,13 +1,13 @@
 import React from 'react';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
-import { AuthProvider } from './AuthContext'; // Import AuthProvider
-import Home from './components/Home';
-import Customers from './components/Customers';
-import Login from './components/Login';
-import Dashboard from './components/Dashboard';
-import Products from './components/Products';
-import CustomerDetail from './components/CustomerDetail';
-import Orders from './components/Orders';
+import { AuthProvider } from './context/AuthContext'; // Import AuthProvider
+import Home from './layouts/Home';
+import Customers from './pages/Customers';
+import Login from './pages/Login';
+import Dashboard from './pages/Dashboard';
+import Products from './pages/Products';
+import CustomerDetail from './pages/CustomerDetail';
+import Orders from './pages/Orders';
 import ProtectedRoute from './components/ProtectedRoute';
 
 function App() {

@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
-import Pagination from './Pagination'; // Assuming Pagination.jsx is in the same folder
+import { FaSearch } from 'react-icons/fa';
+import Pagination from '../components/Pagination'; // Assuming Pagination.jsx is in the same folder
 
 // const allMockOrders = Array.from({ length: 25 }, (_, i) => ({
 //     _id: `o${i + 1}`,
@@ -124,44 +125,42 @@ const Orders = () => {
         : [] // If an order has no items, it won't be displayed
     );
     
-    if (isLoading) {
-        return <div className="p-8 text-center text-lg">Loading orders...</div>;
-    }
-
-    if (error) {
-        return <div className="p-8 text-center text-lg text-red-500">Error: {error}</div>;
-    }
-
     return (
         <div className="relative flex flex-col h-full">
             <div className="flex justify-between items-center pt-8 px-8 pb-4 flex-shrink-0 flex-wrap gap-4">
                 <h2 className="text-2xl font-semibold">Orders</h2>
                 <div className="flex items-center space-x-4">
-                    <select
-                        value={sortBy}
-                        onChange={(e) => setSortBy(e.target.value)}
-                        className="border px-3 py-2 rounded-md focus:outline-none bg-white"
-                    >
+                    <div className="relative group w-full sm:w-auto">
+                        <input
+                            type="text"
+                            placeholder="Search by Order or Payment ID..."
+                            value={searchTerm}
+                            onChange={(e) => {
+                                setSearchTerm(e.target.value);
+                                setCurrentPage(1); // Reset to first page on new search
+                            }}
+                            className="w-full sm:w-64 md:w-80 lg:w-[30rem] xl:w-[36rem] border px-3 py-2 pl-10 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        />
+                        <div className="absolute left-1 top-1/2 -translate-y-1/2 w-8 h-8 flex items-center justify-center rounded-full transition-colors group-hover:bg-gray-100 cursor-pointer">
+                            <FaSearch className="text-gray-400 group-hover:text-gray-600" />
+                        </div>
+                    </div>
+
+                    <select value={sortBy} onChange={(e) => setSortBy(e.target.value)} className="border px-3 py-2 rounded-md focus:outline-none bg-white">
                         <option value="latest">Sort by Latest</option>
                         <option value="oldest">Sort by Oldest</option>
                         <option value="price-asc">Price: Low to High</option>
                         <option value="price-desc">Price: High to Low</option>
                     </select>
-
-                    <input
-                        type="text"
-                        placeholder="Search by Order or Payment ID..."
-                        value={searchTerm}
-                        onChange={(e) => {
-                            setSearchTerm(e.target.value);
-                            setCurrentPage(1); // Reset to first page on new search
-                        }}
-                        className="border px-3 py-2 rounded-md focus:outline-none w-64"
-                    />
                 </div>
             </div>
             <div className="flex-1 overflow-auto">
-                <div className="px-8 pb-8">
+                <div className="px-8 pb-8 relative">
+                    {isLoading && (
+                        <div className="absolute inset-0 bg-white bg-opacity-75 flex items-center justify-center z-20">
+                            <p className="text-lg">Loading orders...</p>
+                        </div>
+                    )}
                     <table className="min-w-full bg-white border border-gray-300 whitespace-nowrap">
                         <thead className="bg-gray-100 sticky top-0 z-10">
                             <tr>
@@ -178,7 +177,11 @@ const Orders = () => {
                             </tr>
                         </thead>
                         <tbody>
-                            {flattenedOrders.length > 0 ? flattenedOrders.map((item, index) => (
+                            {error ? (
+                                <tr>
+                                    <td colSpan="11" className="text-center py-4 text-red-500">Error: {error}</td>
+                                </tr>
+                            ) : flattenedOrders.length > 0 ? flattenedOrders.map((item, index) => (
                                 <tr key={item.uniqueRowKey} className="text-center">
                                     <td className="py-2 px-4 border">
                                         {(currentPage - 1) * itemsPerPage + index + 1}
