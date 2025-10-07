@@ -67,7 +67,7 @@ const AddProduct = ({ onClose, onSave, initialData = null }) => {
     productName: "",
     productBrand: "",
     productCategory: "",
-    productSubCategory: "",
+    subCategory: "",
     productDescription: "",
     productDiscount: "",
     productTags: [],
@@ -91,15 +91,17 @@ const AddProduct = ({ onClose, onSave, initialData = null }) => {
   });
 
   const [images, setImages] = useState([]);
+  const [existingImages, setExistingImages] = useState([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [variants, setVariants] = useState([]);
   const [currentVariant, setCurrentVariant] = useState({
     sku: "",
     size: "",
-    color: [],
-    flavor: "",
+    color: [], // For Apparel/Equipment
+    flavor: [], // For Nutrition
     price: "",
     stock: "",
+    discount: "",
   });
 
   const overlayRef = useRef();
@@ -113,31 +115,31 @@ const AddProduct = ({ onClose, onSave, initialData = null }) => {
         productName: mainData.productName || "",
         productBrand: mainData.productBrand || "",
         productCategory: mainData.productCategory || "",
-        productSubCategory: mainData.productSubCategory || "",
+        subCategory: mainData.subCategory || mainData.productSubCategory || "", // Handle both for backward compatibility if needed
         productDescription: mainData.productDescription || "",
         productDiscount: mainData.productDiscount || "",
         productTags: mainData.productTags || [],
-        // Populate category-specific details
-        apparelDetails: mainData.apparelDetails || {
-          material: "",
-          gender: "Unisex",
-          fit: "",
-          careInstructions: [],
+        // Reconstruct details objects from the flattened initialData
+        apparelDetails: {
+          material: mainData.material || "",
+          gender: mainData.gender || "Unisex",
+          fit: mainData.fit || "",
+          careInstructions: mainData.careInstructions || [],
         },
-        equipmentDetails: mainData.equipmentDetails || {
-          weight: "",
-          dimensions: "",
-          material: "",
-          usage: "",
+        equipmentDetails: {
+          weight: mainData.weight || "",
+          dimensions: mainData.dimensions || "",
+          material: mainData.material || "", // Note: 'material' can exist for both Apparel and Equipment
+          usage: mainData.usage || "",
         },
-        nutritionDetails: mainData.nutritionDetails || {
-          servingSize: "",
-          calories: "",
-          protein: "",
-          carbs: "",
-          fat: "",
-          ingredients: [],
-          allergens: [],
+        nutritionDetails: {
+          servingSize: mainData.servingSize || "",
+          calories: mainData.calories || "",
+          protein: mainData.protein || "",
+          carbs: mainData.carbs || "",
+          fat: mainData.fat || "",
+          ingredients: mainData.ingredients || [],
+          allergens: mainData.allergens || [],
         },
       });
 
@@ -145,12 +147,8 @@ const AddProduct = ({ onClose, onSave, initialData = null }) => {
         productVarient.map((v) => ({ ...v, id: v._id || v.id })) || []
       );
 
-      // For images, we can't create File objects from URLs.
-      // We'll just display existing image URLs and allow adding new files.
-      // A more complex implementation could track existing images for removal.
-      // For now, we'll just show them. The backend will append new images.
-      // We'll store the existing image URLs to display them.
-      // This part is left as a UI display task if needed, as we can't repopulate the file input.
+      // Populate state for existing images to allow for removal
+      setExistingImages(productImages || []);
     }
   }, [initialData, isEditing]);
 
@@ -165,7 +163,7 @@ const AddProduct = ({ onClose, onSave, initialData = null }) => {
     const { name, value } = e.target;
     if (name === "productCategory") {
       // reset subcategory when category changes
-      setProductData({ ...productData, [name]: value, productSubCategory: "" });
+      setProductData({ ...productData, [name]: value, subCategory: "" });
     } else {
       setProductData({ ...productData, [name]: value });
     }
@@ -191,6 +189,10 @@ const AddProduct = ({ onClose, onSave, initialData = null }) => {
     setImages((prev) => prev.filter((_, i) => i !== indexToRemove));
   };
 
+  const handleRemoveExistingImage = (publicIdToRemove) => {
+    setExistingImages(prev => prev.filter(img => img.public_id !== publicIdToRemove));
+  };
+
   // --- variant management ---
   const handleVariantChange = (e) => {
     const { name, value } = e.target;
@@ -199,25 +201,56 @@ const AddProduct = ({ onClose, onSave, initialData = null }) => {
 
   const handleAddVariant = () => {
     //validation for variant
-    if (!currentVariant.price || !currentVariant.stock) {
-      alert("Variant must have at least a price and stock.");
+    if (!currentVariant.price || !currentVariant.stock || !currentVariant.size) {
+      alert("Variant must have at least a Price, Stock, and Size.");
       return;
     }
-    setVariants([...variants, { ...currentVariant, id: Date.now() }]);
-    //reset current variant form
+
+    const newVariant = { ...currentVariant, id: Date.now() };
+
+    // Conditionally include flavor or color based on category
+    if (productData.productCategory !== "Nutrition") {
+      delete newVariant.flavor;
+    } else {
+      delete newVariant.color;
+    }
+
+    setVariants([...variants, newVariant]);
+    // reset current variant form
     setCurrentVariant({
       sku: "",
       size: "",
       color: [],
-      flavor: "",
+      flavor: [],
       price: "",
       stock: "",
+      discount: "",
     });
   };
 
   const handleRemoveVariant = (idToRemove) => {
     setVariants(variants.filter((v) => v.id !== idToRemove));
   };
+
+  const handleEditVariant = (idToEdit) => {
+    const variantToEdit = variants.find((v) => v.id === idToEdit);
+    if (variantToEdit) {
+      // Populate the form with the variant's data, providing defaults for safety
+      setCurrentVariant({
+        sku: variantToEdit.sku || "",
+        size: variantToEdit.size || "",
+        color: variantToEdit.color || [],
+        flavor: variantToEdit.flavor || [],
+        price: variantToEdit.price || "",
+        stock: variantToEdit.stock || "",
+        discount: variantToEdit.discount || "",
+      });
+
+      // Remove the variant from the list so it can be re-added after editing
+      handleRemoveVariant(idToEdit);
+    }
+  };
+
   // --- end variant management ---
 
   const handleSubmit = async (e) => {
@@ -228,7 +261,7 @@ const AddProduct = ({ onClose, onSave, initialData = null }) => {
       !productData.productName ||
       !productData.productBrand ||
       !productData.productCategory ||
-      !productData.productSubCategory ||
+      !productData.subCategory ||
       variants.length === 0
     ) {
       alert(
@@ -257,28 +290,37 @@ const AddProduct = ({ onClose, onSave, initialData = null }) => {
       }
     });
 
+    // Clean and append productDiscount
+    if (productData.productDiscount) {
+      const numericDiscount = String(productData.productDiscount).replace(/[^0-9.]/g, '');
+      formData.set('productDiscount', numericDiscount); // Use .set to overwrite the original
+    }
+
     // append category-specific details
     if (productData.productCategory) {
       const detailsKey = `${productData.productCategory.toLowerCase()}Details`;
-      const details = productData[detailsKey];
-      // ensuring array fields inside details are stringified
-      const stringifiedDetails = { ...details };
-      Object.keys(stringifiedDetails).forEach((k) => {
-        if (Array.isArray(stringifiedDetails[k])) {
-          stringifiedDetails[k] = JSON.stringify(stringifiedDetails[k]);
-        }
-      });
-      formData.append(detailsKey, JSON.stringify(productData[detailsKey]));
+      formData.append(detailsKey, JSON.stringify(productData[detailsKey])); // The object needs to be stringified
     }
 
     // append variants
-    const variantsToSubmit = variants.map(({ id, ...rest }) => rest);
+    const variantsToSubmit = variants.map(({ id, ...rest }) => {
+      const cleanedVariant = { ...rest };
+      if (cleanedVariant.discount) {
+        cleanedVariant.discount = String(cleanedVariant.discount).replace(/[^0-9.]/g, '');
+      }
+      return cleanedVariant;
+    });
     formData.append("productVarient", JSON.stringify(variantsToSubmit));
 
     // append images
     images.forEach((imageFile) => {
       formData.append("productImages", imageFile);
     });
+
+    // If editing, send the updated list of existing images
+    if (isEditing) {
+      formData.append("existingImages", JSON.stringify(existingImages));
+    }
 
     setIsSubmitting(true);
     try {
@@ -470,8 +512,8 @@ const AddProduct = ({ onClose, onSave, initialData = null }) => {
               <option>Equipment</option>
             </select>
             <select
-              name="productSubCategory"
-              value={productData.productSubCategory}
+              name="subCategory"
+              value={productData.subCategory}
               onChange={handleInputChange}
               required
               className="w-full border px-3 py-2 rounded"
@@ -480,8 +522,8 @@ const AddProduct = ({ onClose, onSave, initialData = null }) => {
               <option value="" disabled>
                 Select SubCategory *
               </option>
-              {productData.productCategory &&
-                subcategories[productData.productCategory] &&
+              {productData.productCategory && // Ensure category is selected
+                subcategories.hasOwnProperty(productData.productCategory) && // Ensure it's a valid key
                 subcategories[productData.productCategory].map((sub) => (
                   <option key={sub} value={sub}>
                     {sub}
@@ -551,18 +593,29 @@ const AddProduct = ({ onClose, onSave, initialData = null }) => {
                   <span className="truncate">
                     {variant.sku && `SKU: ${variant.sku}, `}
                     {variant.size && `Size: ${variant.size}, `}
-                    {variant.flavor && `Flavor: ${variant.flavor}, `}
+                    {variant.flavor && variant.flavor.length > 0 &&
+                      `Flavors: ${variant.flavor.join("/")}, `}
                     Price: {variant.price}, Stock: {variant.stock}
-                    {variant.color.length > 0 &&
+                    {variant.discount && `, Discount: ${variant.discount}`}
+                    {variant.color && variant.color.length > 0 &&
                       `, Colors: ${variant.color.join("/")}`}
                   </span>
-                  <button
-                    type="button"
-                    onClick={() => handleRemoveVariant(variant.id)}
-                    className="text-red-500 hover:text-red-700 ml-4 flex-shrink-0"
-                  >
-                    Remove
-                  </button>
+                  <div className="flex items-center space-x-2 flex-shrink-0 ml-4">
+                    <button
+                      type="button"
+                      onClick={() => handleEditVariant(variant.id)}
+                      className="text-blue-500 hover:text-blue-700"
+                    >
+                      Edit
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => handleRemoveVariant(variant.id)}
+                      className="text-red-500 hover:text-red-700"
+                    >
+                      Remove
+                    </button>
+                  </div>
                 </div>
               ))}
               {variants.length === 0 && (
@@ -574,7 +627,7 @@ const AddProduct = ({ onClose, onSave, initialData = null }) => {
             {/* form to add a new variant */}
             <div className="p-3 border rounded-md space-y-3 bg-gray-50">
               <h4 className="font-medium">Add a Variant</h4>
-              <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
                 <input
                   name="sku"
                   placeholder="SKU"
@@ -582,24 +635,13 @@ const AddProduct = ({ onClose, onSave, initialData = null }) => {
                   onChange={handleVariantChange}
                   className="w-full border px-3 py-2 rounded"
                 />
-                {productData.productCategory === "Apparel" && (
                 <input
                   name="size"
-                  placeholder="Size (e.g., M, L)"
+                  placeholder="Size (e.g., M, 1kg, 8) *"
                   value={currentVariant.size}
                   onChange={handleVariantChange}
                   className="w-full border px-3 py-2 rounded"
                 />
-                )}
-                {productData.productCategory === "Nutrition" && (
-                  <input
-                    name="flavor"
-                    placeholder="Flavor"
-                    value={currentVariant.flavor}
-                    onChange={handleVariantChange}
-                    className="w-full border px-3 py-2 rounded"
-                  />
-                )}
                 <input
                   name="price"
                   type="number"
@@ -616,14 +658,32 @@ const AddProduct = ({ onClose, onSave, initialData = null }) => {
                   onChange={handleVariantChange}
                   className="w-full border px-3 py-2 rounded"
                 />
+                <input
+                  name="discount"
+                  placeholder="Discount (e.g., 10%)"
+                  value={currentVariant.discount}
+                  onChange={handleVariantChange}
+                  className="w-full border px-3 py-2 rounded"
+                />
               </div>
-              <TagInput
-                label="Colors"
-                values={currentVariant.color}
-                setValues={(newValues) =>
-                  setCurrentVariant((v) => ({ ...v, color: newValues }))
-                }
-              />
+              {productData.productCategory !== "Nutrition" && (
+                <TagInput
+                  label="Colors"
+                  values={currentVariant.color}
+                  setValues={(newValues) =>
+                    setCurrentVariant((v) => ({ ...v, color: newValues }))
+                  }
+                />
+              )}
+              {productData.productCategory === "Nutrition" && (
+                <TagInput
+                  label="Flavors"
+                  values={currentVariant.flavor}
+                  setValues={(newValues) =>
+                    setCurrentVariant((v) => ({ ...v, flavor: newValues }))
+                  }
+                />
+              )}
               <button
                 type="button"
                 onClick={handleAddVariant}
@@ -643,19 +703,28 @@ const AddProduct = ({ onClose, onSave, initialData = null }) => {
               onChange={handleImageChange}
               className="w-full border px-3 py-2 rounded"
             />
-            {isEditing && initialData.productImages.length > 0 && (
+            {isEditing && existingImages.length > 0 && (
               <div className="mt-3">
                 <p className="text-sm font-medium text-gray-600 mb-2">
                   Existing Images:
                 </p>
                 <div className="flex flex-wrap gap-3">
-                  {initialData.productImages.map((img, index) => (
-                    <img
-                      key={index}
-                      src={img.url}
-                      alt={`Existing ${index}`}
-                      className="w-[80px] h-[80px] object-cover rounded border"
-                    />
+                  {existingImages.map((img, index) => (
+                    <div key={img.public_id || index} className="relative group">
+                      <img
+                        src={img.url}
+                        alt={`Existing ${index}`}
+                        className="w-[80px] h-[80px] object-cover rounded border"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => handleRemoveExistingImage(img.public_id)}
+                        className="absolute -top-1 -right-1 bg-red-600 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center hover:scale-110"
+                        title="Remove"
+                      >
+                        ✕
+                      </button>
+                    </div>
                   ))}
                 </div>
               </div>

@@ -5,11 +5,9 @@ import {
   FaShoppingCart,
   FaUsers,
   FaWallet,
-  FaSignOutAlt,
   FaTimes,
 } from 'react-icons/fa';
 import { RxDashboard } from 'react-icons/rx';
-import { useAuth } from '../context/AuthContext'; // Corrected path
 import TopNavbar from '../components/TopNavbar';
 
 const Home = () => {
@@ -22,7 +20,6 @@ const Home = () => {
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
   const [isMobileView, setIsMobileView] = useState(window.innerWidth < mdBreakpoint);
   const [isLogoInNavbar, setIsLogoInNavbar] = useState(window.innerWidth < xlBreakpoint);
-  const { logout } = useAuth();
 
   // Effect to handle automatic toggling on resize
   useEffect(() => {
@@ -97,8 +94,8 @@ const Home = () => {
     <div className="flex h-screen overflow-hidden bg-gray-100">
       {/* sidebar */}
       <aside className={`bg-white shadow-md overflow-y-auto border-r border-gray-200 transition-all duration-300 z-40 
-        ${isMobileView 
-          ? `fixed h-full ${isMobileSidebarOpen ? 'w-64 translate-x-0' : 'w-0 -translate-x-full'}` 
+        ${isMobileView
+          ? `fixed h-full ${isMobileSidebarOpen ? 'w-64 translate-x-0' : 'w-0 -translate-x-full'}`
           : `flex-shrink-0 ${isSidebarOpen ? 'w-64' : 'w-20'}`}`}>
         {sidebarContent}
 
@@ -153,24 +150,13 @@ const Home = () => {
             <FaWallet size={20} />
             <span className={`whitespace-nowrap transition-all duration-200 overflow-hidden ${(isSidebarOpen || isMobileSidebarOpen) ? 'opacity-100 ml-3 w-auto' : 'opacity-0 w-0'}`}>Payments</span>
           </NavLink>
-          <button
-            onClick={() => {
-              logout();
-              handleMobileLinkClick();
-            }}
-            className={`flex items-center text-gray-700 hover:text-red-600 hover:bg-red-50 px-3 py-2 rounded-md transition w-full ${(isSidebarOpen || isMobileSidebarOpen) ? 'text-left' : 'justify-center'}`}
-            title="Logout"
-          >
-            <FaSignOutAlt size={20} />
-            <span className={`whitespace-nowrap transition-all duration-200 overflow-hidden ${(isSidebarOpen || isMobileSidebarOpen) ? 'opacity-100 ml-3 w-auto' : 'opacity-0 w-0'}`}>Logout</span>
-          </button>
         </nav>
       </aside>
 
       {/* Backdrop for mobile overlay */}
       {isMobileView && isMobileSidebarOpen && (
-        <div 
-          className="fixed inset-0 bg-black bg-opacity-50 z-30" 
+        <div
+          className="fixed inset-0 bg-black bg-opacity-50 z-30"
           onClick={() => setIsMobileSidebarOpen(false)}
         ></div>
       )}

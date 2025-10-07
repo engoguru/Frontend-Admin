@@ -1,12 +1,42 @@
-import React from 'react';
-import { NavLink } from 'react-router-dom';
+import React, { useState, useEffect, useRef } from 'react';
+import { NavLink, useNavigate } from 'react-router-dom';
 import {
   FaBars,
-  FaBell,
   FaCaretDown,
+  FaUserEdit,
+  FaCog,
+  FaQuestionCircle,
+  FaSignOutAlt,
 } from 'react-icons/fa';
+import { useAuth } from '../context/AuthContext';
 
 const TopNavbar = ({ toggleSidebar, showLogo }) => {
+  const [admin, setAdmin] = useState(null);
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const dropdownRef = useRef(null);
+  const navigate = useNavigate();
+  const { logout } = useAuth();
+
+  useEffect(() => {
+    // Fetch admin details from local storage
+    const adminData = localStorage.getItem('admin');
+    if (adminData) {
+      setAdmin(JSON.parse(adminData));
+    }
+
+    // Click outside handler
+    const handleClickOutside = (event) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+        setIsDropdownOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  const handleLogout = () => {
+    logout();
+  };
   return (
     <header className="bg-white shadow-sm p-4 flex justify-between items-center flex-shrink-0 z-20 border-b border-gray-200">
       {/* Left Section: Sidebar Toggle */}
@@ -27,21 +57,51 @@ const TopNavbar = ({ toggleSidebar, showLogo }) => {
       )}
 
       {/* Right Section: Notifications & Profile */}
-      <div className={`flex items-center justify-end space-x-6 ${showLogo ? 'w-1/4' : ''}`}>
-        {/* Notifications Icon */}
-        {/* <button className="relative text-gray-600 hover:text-gray-800">
-          <FaBell className="h-5 w-5" />
-          <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-4 w-4 flex items-center justify-center">3</span>
-        </button> */}
+      <div className={`flex items-center justify-end ${showLogo ? 'w-1/4' : ''}`}>
         {/* User Profile Dropdown */}
-        <div className="flex items-center space-x-2 cursor-pointer">
-          <img
-            src="https://i.pravatar.cc/40" // Placeholder image
-            alt="Admin"
-            className="h-9 w-9 rounded-full object-cover border-2 border-gray-200"
-          />
-          <span className="text-sm font-medium text-gray-700 hidden sm:block">Admin</span>
-          <FaCaretDown className="text-gray-500" />
+        <div ref={dropdownRef} className="relative">
+          <button onClick={() => setIsDropdownOpen(!isDropdownOpen)} className="flex items-center space-x-2 cursor-pointer p-2 rounded-md hover:bg-gray-100">
+            <img
+              src={admin?.profilePicture || `https://ui-avatars.com/api/?name=${admin?.name || 'Admin'}&background=random`}
+              alt={admin?.name || 'Admin'}
+              className="h-9 w-9 rounded-full object-cover border-2 border-gray-200"
+            />
+            <span className="text-sm font-medium text-gray-700 hidden sm:block">{admin?.name?.split(' ')[0] || 'Admin'}</span>
+            <FaCaretDown className={`text-gray-500 transition-transform duration-200 ${isDropdownOpen ? 'rotate-180' : ''}`} />
+          </button>
+
+          {/* Dropdown Menu */}
+          {isDropdownOpen && (
+            <div className="absolute right-0 mt-2 w-64 bg-white rounded-lg shadow-xl border border-gray-200 overflow-hidden z-30">
+              <div className="p-4 border-b border-gray-200">
+                <p className="font-semibold text-gray-800">{admin?.name || 'Admin User'}</p>
+                <p className="text-sm text-gray-500 truncate">{admin?.email || 'admin@example.com'}</p>
+              </div>
+              <ul className="py-2">
+                <li className="px-4 py-2 hover:bg-gray-100 cursor-pointer flex items-center gap-3 text-gray-700">
+                  <FaUserEdit className="text-gray-500" />
+                  <span>Edit profile</span>
+                </li>
+                <li className="px-4 py-2 hover:bg-gray-100 cursor-pointer flex items-center gap-3 text-gray-700">
+                  <FaCog className="text-gray-500" />
+                  <span>Account settings</span>
+                </li>
+                <li className="px-4 py-2 hover:bg-gray-100 cursor-pointer flex items-center gap-3 text-gray-700">
+                  <FaQuestionCircle className="text-gray-500" />
+                  <span>Support</span>
+                </li>
+              </ul>
+              <div className="border-t border-gray-200">
+                <button
+                  onClick={handleLogout}
+                  className="w-full text-left px-4 py-3 hover:bg-gray-100 text-red-600 flex items-center gap-3"
+                >
+                  <FaSignOutAlt />
+                  <span>Sign out</span>
+                </button>
+              </div>
+            </div>
+          )}
         </div>
       </div>
     </header>

@@ -72,7 +72,7 @@ const Customers = () => {
               className="w-full sm:w-64 md:w-80 lg:w-[30rem] xl:w-[36rem] border px-3 py-2 pl-10 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
             <div className="absolute left-1 top-1/2 -translate-y-1/2 w-8 h-8 flex items-center justify-center rounded-full transition-colors group-hover:bg-gray-100 cursor-pointer">
-                <FaSearch className="text-gray-400 group-hover:text-gray-600" />
+              <FaSearch className="text-gray-400 group-hover:text-gray-600" />
             </div>
           </div>
           <select value={sortBy} onChange={(e) => setSortBy(e.target.value)} className="border px-3 py-2 rounded-md focus:outline-none bg-white">
@@ -85,11 +85,11 @@ const Customers = () => {
       </div>
       <div className="flex-1 overflow-auto">
         <div className="px-8 pb-8 relative">
-            {isLoading && (
-                <div className="absolute inset-0 bg-white bg-opacity-75 flex items-center justify-center z-20">
-                    <p className="text-lg">Loading customers...</p>
-                </div>
-            )}
+          {isLoading && (
+            <div className="absolute inset-0 bg-white bg-opacity-75 flex items-center justify-center z-20">
+              <p className="text-lg">Loading customers...</p>
+            </div>
+          )}
           <table className="min-w-full bg-white border border-gray-300 whitespace-nowrap">
             <thead className="bg-gray-100 sticky top-0 z-10">
               <tr>
@@ -106,9 +106,9 @@ const Customers = () => {
             </thead>
             <tbody>
               {error ? (
-                  <tr>
-                      <td colSpan="9" className="text-center py-4 text-red-500">Error: {error}</td>
-                  </tr>
+                <tr>
+                  <td colSpan="9" className="text-center py-4 text-red-500">Error: {error}</td>
+                </tr>
               ) : filteredCustomers.length > 0 ? filteredCustomers.map((customer, index) => (
                 <tr key={customer._id} className="text-center">
                   <td className="py-2 px-4 border">{(currentPage - 1) * itemsPerPage + index + 1}</td>
@@ -119,9 +119,8 @@ const Customers = () => {
                   <td className="py-2 px-4 border">{Array.isArray(customer.address) ? customer.address.join(', ') : ''}</td>
                   <td className="py-2 px-4 border">{customer.role}</td>
                   <td className="py-2 px-4 border">
-                    <span className={`px-2 py-1 text-xs font-semibold rounded-full ${
-                      customer.isVerified ? 'bg-green-200 text-green-800' : 'bg-red-200 text-red-800'
-                    }`}>
+                    <span className={`px-2 py-1 text-xs font-semibold rounded-full ${customer.isVerified ? 'bg-green-200 text-green-800' : 'bg-red-200 text-red-800'
+                      }`}>
                       {customer.isVerified ? 'Yes' : 'No'}
                     </span>
                   </td>

@@ -7,7 +7,7 @@ import { useAuth } from '../context/AuthContext';
 const Login = () => {
   const navigate = useNavigate();
   const { login } = useAuth();
-  
+
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
@@ -39,11 +39,11 @@ const Login = () => {
     <div className="flex items-center justify-center min-h-screen bg-gray-100">
       <div className="w-full max-w-md p-8 space-y-6 bg-white rounded-lg shadow-md">
         <div className="text-center">
-            <h2 className="text-3xl font-bold">
-                <span className="text-black">SPORT</span>
-                <span className="text-red-700">DUNIYA</span>
-            </h2>
-            <p className="mt-2 text-sm text-gray-600">Admin Panel Login</p>
+          <h2 className="text-3xl font-bold">
+            <span className="text-black">SPORT</span>
+            <span className="text-red-700">DUNIYA</span>
+          </h2>
+          <p className="mt-2 text-sm text-gray-600">Admin Panel Login</p>
         </div>
         <form onSubmit={handleLogin} className="space-y-6">
           <input type="email" placeholder="Email" value={email} onChange={(e) => setEmail(e.target.value)} className="w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" required />
