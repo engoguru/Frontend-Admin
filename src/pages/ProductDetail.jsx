@@ -167,7 +167,7 @@ const ProductDetail = () => {
                                 {product.productVarient?.length > 0 ? (
                                     product.productVarient.map((variant) => (
                                         <tr key={variant._id}>
-                                            <td className="py-2 px-4 border">{variant.SKU}</td>
+                                            <td className="py-2 px-4 border">{variant.sku}</td>
                                             <td className="py-2 px-4 border">{variant.size || 'N/A'}</td>
                                             <td className="py-2 px-4 border">
                                                 {Array.isArray(variant.color) ? variant.color.join(', ') : (variant.color || 'N/A')}

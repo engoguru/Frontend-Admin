@@ -67,10 +67,10 @@ export const createProduct = async (formData) => {
  * Fetches all products from the backend.
  * @returns {Promise<any>} - The JSON response from the API.
  */
-export const getAllProducts = async (page = 1, limit = 10) => {
+export const getAllProducts = async (page = 1, limit = 10, sortBy = 'latest') => {
   try {
     const response = await fetch(
-      `${API_BASE_URL}/productList/getAll?page=${page}&itemsPerPage=${limit}`
+      `${API_BASE_URL}/productList/getAll?page=${page}&itemsPerPage=${limit}&sort=${sortBy}`
     );
 
     if (!response.ok) {
