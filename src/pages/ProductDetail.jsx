@@ -22,8 +22,8 @@ const ProductDetail = () => {
             try {
                 setIsLoading(true);
                 const result = await getProductById(id);
-                if (result && result.product) {
-                    setProduct(result.product);
+                if (result && result.data) {
+                    setProduct(result.data);
                 } else {
                     throw new Error('Product not found');
                 }
