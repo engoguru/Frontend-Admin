@@ -113,18 +113,6 @@ const Orders = () => {
         }
     };
 
-    // Flatten orders to display one row per item
-    const flattenedOrders = orders.flatMap(order =>
-        (order.items && order.items.length > 0) ?
-        order.items.map(item => ({
-            ...order, // Spread order properties
-            ...item,  // Spread item properties (like productName, quantity, price)
-            order_id: order._id, // Keep original order ID
-            uniqueRowKey: `${order._id}-${item.productId}-${item.size || ''}`, // Create a unique key for the row
-        }))
-        : [] // If an order has no items, it won't be displayed
-    );
-    
     return (
         <div className="relative flex flex-col h-full">
             <div className="flex justify-between items-center pt-8 px-8 pb-4 flex-shrink-0 flex-wrap gap-4">
@@ -149,8 +137,8 @@ const Orders = () => {
                     <select value={sortBy} onChange={(e) => setSortBy(e.target.value)} className="border px-3 py-2 rounded-md focus:outline-none bg-white">
                         <option value="latest">Sort by Latest</option>
                         <option value="oldest">Sort by Oldest</option>
-                        <option value="price-asc">Price: Low to High</option>
-                        <option value="price-desc">Price: High to Low</option>
+                        <option value="price-asc">Total Price: Low to High</option>
+                        <option value="price-desc">Total Price: High to Low</option>
                     </select>
                 </div>
             </div>
@@ -165,10 +153,10 @@ const Orders = () => {
                         <thead className="bg-gray-100 sticky top-0 z-10">
                             <tr>
                                 <th className="py-2 px-4 border">Sr No</th>
-                                <th className="py-2 px-4 border">Product</th>
-                                <th className="py-2 px-4 border">Product ID</th>
-                                <th className="py-2 px-4 border">Price</th>
-                                <th className="py-2 px-4 border">Quantity</th>
+                                <th className="py-2 px-4 border">Order ID</th>
+                                <th className="py-2 px-4 border">Customer</th>
+                                <th className="py-2 px-4 border">Total Price</th>
+                                <th className="py-2 px-4 border">Delivery Address</th>
                                 <th className="py-2 px-4 border">Payment ID</th>
                                 <th className="py-2 px-4 border">Payment Method</th>
                                 <th className="py-2 px-4 border">Payment Status</th>
@@ -181,42 +169,42 @@ const Orders = () => {
                                 <tr>
                                     <td colSpan="11" className="text-center py-4 text-red-500">Error: {error}</td>
                                 </tr>
-                            ) : flattenedOrders.length > 0 ? flattenedOrders.map((item, index) => (
-                                <tr key={item.uniqueRowKey} className="text-center">
+                            ) : orders.length > 0 ? orders.map((order, index) => (
+                                <tr key={order._id} className="text-center">
                                     <td className="py-2 px-4 border">
                                         {(currentPage - 1) * itemsPerPage + index + 1}
                                     </td>
-                                    <td className="py-2 px-4 border">{item.productName || 'N/A'}</td>
-                                    <td className="py-2 px-4 border">{item.productId || 'N/A'}</td>
+                                    <td className="py-2 px-4 border font-medium text-blue-600">{order._id || 'N/A'}</td>
+                                    <td className="py-2 px-4 border">{order.deliveryAddress?.name || 'N/A'}</td>
                                     <td className="py-2 px-4 border">
-                                        ₹{typeof item.price === 'number' ? item.price.toFixed(2) : 'N/A'}
+                                        ₹{typeof order.totalPrice === 'number' ? order.totalPrice.toFixed(2) : 'N/A'}
                                     </td>
                                     <td className="py-2 px-4 border">
-                                        {item.quantity || 'N/A'}       
+                                        {`${order.deliveryAddress?.address_line1}, ${order.deliveryAddress?.city}, ${order.deliveryAddress?.state}`}
                                     </td>
-                                    <td className="py-2 px-4 border">{item.paymentId}</td>
-                                    <td className="py-2 px-4 border">{item.paymentMethod}</td>
+                                    <td className="py-2 px-4 border">{order.paymentId}</td>
+                                    <td className="py-2 px-4 border">{order.paymentMethod}</td>
                                     <td className="py-2 px-4 border">
-                                        <StatusBadge text={item.paymentStatus} colorClass={paymentStatusColors[item.paymentStatus]} />
+                                        <StatusBadge text={order.paymentStatus} colorClass={paymentStatusColors[order.paymentStatus]} />
                                     </td>
                                     <td className="py-2 px-4 border">
-                                        <StatusBadge text={item.orderStatus} colorClass={shippingStatusColors[item.orderStatus]} />
+                                        <StatusBadge text={order.orderStatus} colorClass={shippingStatusColors[order.orderStatus]} />
                                     </td>
                                     <td className="py-2 px-4 border space-x-2">
                                         <button
-                                            onClick={() => handleViewClick(item.order_id)}
+                                            onClick={() => handleViewClick(order._id)}
                                             className="bg-blue-500 text-white px-2 py-1 rounded hover:bg-blue-600"
                                         >
                                             View
                                         </button>
                                         <button
-                                            onClick={() => handleEditClick(item.order_id)}
+                                            onClick={() => handleEditClick(order._id)}
                                             className="bg-yellow-500 text-white px-2 py-1 rounded hover:bg-yellow-600"
                                         >
                                             Edit
                                         </button>
                                         <button
-                                            onClick={() => handleDeleteClick(item.order_id)}
+                                            onClick={() => handleDeleteClick(order._id)}
                                             className="bg-red-500 text-white px-2 py-1 rounded hover:bg-red-600"
                                         >
                                             Delete

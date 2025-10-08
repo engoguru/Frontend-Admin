@@ -5,6 +5,7 @@ import React, {
   useCallback,
   useMemo,
 } from "react";
+import { useNavigate, useLocation } from "react-router-dom";
 import AddProduct from "../components/AddProduct.jsx";
 import { FaSearch } from "react-icons/fa";
 import {
@@ -19,6 +20,8 @@ import Pagination from "../components/Pagination.jsx";
 const Products = () => {
   const [showAddForm, setShowAddForm] = useState(false);
   const [products, setProducts] = useState([]);
+  const navigate = useNavigate();
+  const location = useLocation();
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
   const [editingProduct, setEditingProduct] = useState(null);
@@ -60,6 +63,18 @@ const Products = () => {
   useEffect(() => {
     fetchProducts(currentPage);
   }, [fetchProducts, currentPage]);
+
+  // Effect to open edit form if navigated from ProductDetail page
+  useEffect(() => {
+    if (location.state?.editProductId && products.length > 0) {
+      const productToEdit = products.find(p => p.id === location.state.editProductId);
+      if (productToEdit) {
+        setEditingProduct(productToEdit);
+        setShowAddForm(true);
+        navigate(location.pathname, { replace: true, state: {} }); // Clear state after use
+      }
+    }
+  }, [location.state, products, navigate]);
 
   const handlePageChange = (page) => {
     setCurrentPage(page);
@@ -148,6 +163,10 @@ const Products = () => {
       setEditingProduct(productToEdit);
       setShowAddForm(true);
     }
+  };
+
+  const handleViewClick = (productId) => {
+    navigate(`/products/${productId}`);
   };
 
   const handleCloseForm = () => {
@@ -404,7 +423,10 @@ const Products = () => {
                       {getPriceRange(item.productVarient)}
                     </td>
                     <td className="py-2 px-4 border space-x-2">
-                      <button className="bg-blue-500 text-white px-2 py-1 rounded hover:bg-blue-600">
+                      <button
+                        onClick={() => handleViewClick(item.id)}
+                        className="bg-blue-500 text-white px-2 py-1 rounded hover:bg-blue-600"
+                      >
                         View
                       </button>
                       <button

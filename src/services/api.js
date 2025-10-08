@@ -10,19 +10,27 @@ const API_BASE_URL_USER = "http://localhost:5000"; // User service
  */
 export const adminLogin = async (credentials) => {
   try {
+    // Add a flag to indicate this is an admin login attempt
+    const payload = { ...credentials, isAdminLogin: true };
+
     const response = await fetch(
-      `${API_BASE_URL_USER}/api/users/account/admin/login`,
+      `${API_BASE_URL_USER}/api/users/account/userLogin`, // Use the unified user login endpoint
       {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify(credentials),
+        body: JSON.stringify({ data: payload }), // Match the expected backend structure
       }
     );
     const data = await response.json();
     if (!response.ok) {
       throw new Error(data.message || "Login failed.");
+    }
+    // Store admin data in localStorage
+    if (data.token) {
+      localStorage.setItem("admin-token", data.token);
+      localStorage.setItem("admin", JSON.stringify(data.user)); // Assuming 'user' object is returned on login
     }
     return data;
   } catch (error) {
@@ -76,6 +84,30 @@ export const getAllProducts = async (page = 1, limit = 10) => {
     throw error;
   }
 };
+
+/**
+ * Fetches a single product by its ID.
+ * @param {string} productId - The ID of the product to fetch.
+ * @returns {Promise<any>} - The JSON response from the API.
+ */
+export const getProductById = async (productId) => {
+  try {
+    const response = await fetch(
+      `${API_BASE_URL}/productList/GetOne/${productId}`
+    );
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.message || "Failed to fetch product.");
+    }
+
+    return await response.json();
+  } catch (error) {
+    console.error("Error fetching product by ID:", error);
+    throw error;
+  }
+};
+
 
 /**
  * Updates an existing product.

@@ -82,7 +82,15 @@ const CustomerDetail = () => {
           </div>
           <div className="md:col-span-2">
             <p className="text-sm text-gray-500">Address</p>
-            <p className="font-semibold">{Array.isArray(customer.address) && customer.address.length > 0 ? customer.address.join(', ') : 'No address provided'}</p>
+            <p className="font-semibold">
+              {Array.isArray(customer.address) && customer.address.length > 0 ?
+                (() => {
+                  const addr = customer.address[0]; // Get only the first (default) address
+                  if (typeof addr !== 'object' || addr === null) return 'Invalid address format';
+                  const addressParts = [addr.address_line1, addr.address_line2, addr.city, addr.state, addr.pincode];
+                  return addressParts.filter(Boolean).join(', ');
+                })() : 'No address provided'}
+            </p>
           </div>
           <div>
             <p className="text-sm text-gray-500">Role</p>

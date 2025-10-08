@@ -110,21 +110,31 @@ const Customers = () => {
                   <td colSpan="9" className="text-center py-4 text-red-500">Error: {error}</td>
                 </tr>
               ) : filteredCustomers.length > 0 ? filteredCustomers.map((customer, index) => (
-                <tr key={customer._id} className="text-center">
+                <tr key={customer._id} className="text-left">
                   <td className="py-2 px-4 border">{(currentPage - 1) * itemsPerPage + index + 1}</td>
                   <td className="py-2 px-4 border">{customer.name}</td>
                   <td className="py-2 px-4 border">{customer.email}</td>
                   <td className="py-2 px-4 border">{customer.whatsApp_Number}</td>
                   <td className="py-2 px-4 border">{customer.contactNumber}</td>
-                  <td className="py-2 px-4 border">{Array.isArray(customer.address) ? customer.address.join(', ') : ''}</td>
-                  <td className="py-2 px-4 border">{customer.role}</td>
                   <td className="py-2 px-4 border">
+                    {Array.isArray(customer.address) && customer.address.length > 0 ? (
+                      <div>
+                        {customer.address[0].address_line1 && <p>{customer.address[0].address_line1},</p>}
+                        {customer.address[0].address_line2 && <p>{customer.address[0].address_line2},</p>}
+                        <p>{customer.address[0].city}, {customer.address[0].state} - {customer.address[0].pincode}</p>
+                        <p>{customer.address[0].country}</p>
+                        <p className="italic text-gray-500">Type: {customer.address[0].address_type}</p>
+                      </div>
+                    ) : ''}
+                  </td>
+                  <td className="py-2 px-4 border text-center">{customer.role}</td>
+                  <td className="py-2 px-4 border text-center">
                     <span className={`px-2 py-1 text-xs font-semibold rounded-full ${customer.isVerified ? 'bg-green-200 text-green-800' : 'bg-red-200 text-red-800'
                       }`}>
                       {customer.isVerified ? 'Yes' : 'No'}
                     </span>
                   </td>
-                  <td className="py-2 px-4 border space-x-2">
+                  <td className="py-2 px-4 border space-x-2 text-center">
                     <button
                       onClick={() => handleViewClick(customer._id)}
                       className="bg-blue-500 text-white px-2 py-1 rounded hover:bg-blue-600"

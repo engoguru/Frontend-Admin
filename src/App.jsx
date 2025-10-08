@@ -7,8 +7,11 @@ import Login from './pages/Login';
 import Dashboard from './pages/Dashboard';
 import Products from './pages/Products';
 import CustomerDetail from './pages/CustomerDetail';
+import ProductDetail from './pages/ProductDetail'; // Import the new component
+import OrderDetail from './pages/OrderDetail';
 import Orders from './pages/Orders';
 import ProtectedRoute from './components/ProtectedRoute';
+import Banners from './pages/Banners';
 
 function App() {
   return (
@@ -21,8 +24,11 @@ function App() {
               <Route index element={<Dashboard />} />
               <Route path="customers" element={<Customers />} />
               <Route path="customers/:id" element={<CustomerDetail />} />
+              <Route path="products/:id" element={<ProductDetail />} /> {/* Add the new route */}
               <Route path="products" element={<Products />} />
+              <Route path="orders/:id" element={<OrderDetail />} />
               <Route path="orders" element={<Orders />} />
+              <Route path="banners" element={<Banners />} />
             </Route>
           </Route>
         </Routes>

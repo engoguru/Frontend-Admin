@@ -6,6 +6,7 @@ import {
   FaUsers,
   FaWallet,
   FaTimes,
+  FaImage,
 } from 'react-icons/fa';
 import { RxDashboard } from 'react-icons/rx';
 import TopNavbar from '../components/TopNavbar';
@@ -149,6 +150,16 @@ const Home = () => {
           >
             <FaWallet size={20} />
             <span className={`whitespace-nowrap transition-all duration-200 overflow-hidden ${(isSidebarOpen || isMobileSidebarOpen) ? 'opacity-100 ml-3 w-auto' : 'opacity-0 w-0'}`}>Payments</span>
+          </NavLink>
+          <NavLink
+            to="/banners"
+            style={({ isActive }) => (isActive ? activeLinkStyle : undefined)}
+            className={`flex items-center text-gray-700 hover:text-blue-600 hover:bg-blue-50 px-3 py-2 rounded-md transition ${!(isSidebarOpen || isMobileSidebarOpen) && 'justify-center'}`}
+            title="Banners"
+            onClick={handleMobileLinkClick}
+          >
+            <FaImage size={20} />
+            <span className={`whitespace-nowrap transition-all duration-200 overflow-hidden ${(isSidebarOpen || isMobileSidebarOpen) ? 'opacity-100 ml-3 w-auto' : 'opacity-0 w-0'}`}>Banners</span>
           </NavLink>
         </nav>
       </aside>

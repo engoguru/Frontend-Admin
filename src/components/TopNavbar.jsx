@@ -1,21 +1,22 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { NavLink, useNavigate } from 'react-router-dom';
+import { NavLink, useNavigate, useLocation } from 'react-router-dom';
 import {
   FaBars,
   FaCaretDown,
+  FaUserCircle,
   FaUserEdit,
   FaCog,
   FaQuestionCircle,
   FaSignOutAlt,
 } from 'react-icons/fa';
 import { useAuth } from '../context/AuthContext';
-
+import { jwtDecode } from 'jwt-decode';
 const TopNavbar = ({ toggleSidebar, showLogo }) => {
   const [admin, setAdmin] = useState(null);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const dropdownRef = useRef(null);
-  const navigate = useNavigate();
-  const { logout } = useAuth();
+  const { logout, token } = useAuth();
+  const location = useLocation(); // Listen to location changes
 
   useEffect(() => {
     // Fetch admin details from local storage
@@ -32,7 +33,7 @@ const TopNavbar = ({ toggleSidebar, showLogo }) => {
     };
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, []);
+  }, [location.pathname]); // Re-run only when the path changes
 
   const handleLogout = () => {
     logout();
@@ -61,12 +62,10 @@ const TopNavbar = ({ toggleSidebar, showLogo }) => {
         {/* User Profile Dropdown */}
         <div ref={dropdownRef} className="relative">
           <button onClick={() => setIsDropdownOpen(!isDropdownOpen)} className="flex items-center space-x-2 cursor-pointer p-2 rounded-md hover:bg-gray-100">
-            <img
-              src={admin?.profilePicture || `https://ui-avatars.com/api/?name=${admin?.name || 'Admin'}&background=random`}
-              alt={admin?.name || 'Admin'}
-              className="h-9 w-9 rounded-full object-cover border-2 border-gray-200"
-            />
-            <span className="text-sm font-medium text-gray-700 hidden sm:block">{admin?.name?.split(' ')[0] || 'Admin'}</span>
+            {/* Use an icon instead of an image */}
+            <FaUserCircle className="h-8 w-8 text-gray-500" />
+
+            <span className="text-sm font-medium text-gray-700 hidden sm:block">{admin?.name?.split(' ')[0]}</span>
             <FaCaretDown className={`text-gray-500 transition-transform duration-200 ${isDropdownOpen ? 'rotate-180' : ''}`} />
           </button>
 
@@ -74,8 +73,8 @@ const TopNavbar = ({ toggleSidebar, showLogo }) => {
           {isDropdownOpen && (
             <div className="absolute right-0 mt-2 w-64 bg-white rounded-lg shadow-xl border border-gray-200 overflow-hidden z-30">
               <div className="p-4 border-b border-gray-200">
-                <p className="font-semibold text-gray-800">{admin?.name || 'Admin User'}</p>
-                <p className="text-sm text-gray-500 truncate">{admin?.email || 'admin@example.com'}</p>
+                <p className="font-semibold text-gray-800">{admin?.name}</p>
+                <p className="text-sm text-gray-500 truncate">{admin?.email}</p>
               </div>
               <ul className="py-2">
                 <li className="px-4 py-2 hover:bg-gray-100 cursor-pointer flex items-center gap-3 text-gray-700">
@@ -85,10 +84,6 @@ const TopNavbar = ({ toggleSidebar, showLogo }) => {
                 <li className="px-4 py-2 hover:bg-gray-100 cursor-pointer flex items-center gap-3 text-gray-700">
                   <FaCog className="text-gray-500" />
                   <span>Account settings</span>
-                </li>
-                <li className="px-4 py-2 hover:bg-gray-100 cursor-pointer flex items-center gap-3 text-gray-700">
-                  <FaQuestionCircle className="text-gray-500" />
-                  <span>Support</span>
                 </li>
               </ul>
               <div className="border-t border-gray-200">
