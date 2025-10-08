@@ -3,15 +3,15 @@ import axios from 'axios';
 import { toast } from 'react-toastify';
 import { FaImage, FaEdit, FaTrash, FaTimes } from 'react-icons/fa';
 
-const API_URL = 'http://localhost:5002';
+const API_URL = 'http://localhost:5000';
 
 const getBanners = async () => {
-  const { data } = await axios.get(`${API_URL}/banner/getAll`);
+  const { data } = await axios.get(`${API_URL}/api/products/banner/getAll`);
   return data.banners;
 };
 
 const createBanner = async (formData) => {
-  const { data } = await axios.post(`${API_URL}/banner/create`, formData, {
+  const { data } = await axios.post(`${API_URL}/api/products/banner/create`, formData, {
     headers: { 'Content-Type': 'multipart/form-data' },
     withCredentials: true,
   });
@@ -19,7 +19,7 @@ const createBanner = async (formData) => {
 };
 
 const updateBanner = async (id, formData) => {
-  const { data } = await axios.put(`${API_URL}/banner/update/${id}`, formData, {
+  const { data } = await axios.put(`${API_URL}/api/products/banner/update/${id}`, formData, {
     headers: { 'Content-Type': 'multipart/form-data' },
     withCredentials: true,
   });
@@ -27,7 +27,7 @@ const updateBanner = async (id, formData) => {
 };
 
 const deleteBanner = async (id) => {
-  const { data } = await axios.delete(`${API_URL}/banner/delete/${id}`, {
+  const { data } = await axios.delete(`${API_URL}/api/products/banner/delete/${id}`, {
     withCredentials: true,
   });
   return data;

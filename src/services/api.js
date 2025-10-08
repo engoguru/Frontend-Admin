@@ -1,4 +1,4 @@
-const API_BASE_URL = "http://localhost:5002"; // Make sure this matches your backend server address
+const API_BASE_URL = "http://localhost:5000"; // Make sure this matches your backend server address
 const API_BASE_URL_USER = "http://localhost:5000"; // User service
 
 /**
@@ -45,7 +45,7 @@ export const adminLogin = async (credentials) => {
  */
 export const createProduct = async (formData) => {
   try {
-    const response = await fetch(`${API_BASE_URL}/productList/Create`, {
+    const response = await fetch(`${API_BASE_URL}/api/products/productList/Create`, {
       method: "POST",
       body: formData,
       // For multipart/form-data, the browser sets the 'Content-Type' header automatically with the correct boundary.
@@ -70,7 +70,7 @@ export const createProduct = async (formData) => {
 export const getAllProducts = async (page = 1, limit = 10, sortBy = 'latest') => {
   try {
     const response = await fetch(
-      `${API_BASE_URL}/productList/getAll?page=${page}&itemsPerPage=${limit}&sort=${sortBy}`
+      `${API_BASE_URL}/api/products/productList/getAll?page=${page}&itemsPerPage=${limit}&sort=${sortBy}`
     );
 
     if (!response.ok) {
@@ -93,7 +93,7 @@ export const getAllProducts = async (page = 1, limit = 10, sortBy = 'latest') =>
 export const getProductById = async (productId) => {
   try {
     const response = await fetch(
-      `${API_BASE_URL}/productList/GetOne/${productId}`
+      `${API_BASE_URL}/api/products/productList/GetOne/${productId}`
     );
 
     if (!response.ok) {
@@ -118,7 +118,7 @@ export const getProductById = async (productId) => {
 export const updateProduct = async (productId, formData) => {
   try {
     const response = await fetch(
-      `${API_BASE_URL}/productList/update/${productId}`,
+      `${API_BASE_URL}/api/products/productList/update/${productId}`,
       {
         method: "PUT",
         body: formData,
@@ -143,7 +143,7 @@ export const updateProduct = async (productId, formData) => {
 export const deleteProduct = async (productId) => {
   try {
     const response = await fetch(
-      `${API_BASE_URL}/productList/delete/${productId}`,
+      `${API_BASE_URL}/api/products/productList/delete/${productId}`,
       {
         method: "DELETE",
       }
@@ -166,7 +166,7 @@ export const deleteProduct = async (productId) => {
  */
 export const bulkCreateProducts = async (formData) => {
   try {
-    const response = await fetch(`${API_BASE_URL}/productList/bulkCreate`, {
+    const response = await fetch(`${API_BASE_URL}/api/products/productList/bulkCreate`, {
       method: "POST",
       body: formData,
     });
