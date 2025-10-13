@@ -117,6 +117,7 @@ const OrderDetail = () => {
                             <thead>
                                 <tr className="border-b">
                                     <th className="py-2">Product</th>
+                                    <th className='py-2'>Brand</th>
                                     <th className="py-2 text-center">Quantity</th>
                                     <th className="py-2 text-right">Price</th>
                                     <th className="py-2 text-right">Total</th>
@@ -129,9 +130,14 @@ const OrderDetail = () => {
                                             <img src={item.productDetails?.productImages?.[0]?.url || 'https://via.placeholder.com/150'} alt={item.productDetails?.productName} className="w-12 h-12 object-cover rounded" />
                                             <div>
                                                 <p className="font-semibold">{item.productDetails?.productName || 'Product not found'}</p>
-                                                <p className="text-xs text-gray-500">Size: {item.size}</p>
+                                                <div className="text-xs text-gray-500 flex flex-wrap gap-x-2">
+                                                    {item.size && <span>Size: {item.size}</span>}
+                                                    {item.color && Array.isArray(item.color) && item.color.length > 0 && <span>Color: {item.color.join(', ')}</span>}
+                                                    {item.flavor && <span>Flavor: {item.flavor}</span>}
+                                                </div>
                                             </div>
                                         </td>
+                                        <td className="py-3 text-left">{item.productDetails?.productBrand || 'N/A'}</td>
                                         <td className="py-3 text-center">{item.quantity}</td>
                                         <td className="py-3 text-right">₹{item.price.toFixed(2)}</td>
                                         <td className="py-3 text-right font-semibold">₹{(item.price * item.quantity).toFixed(2)}</td>

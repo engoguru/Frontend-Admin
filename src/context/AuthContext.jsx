@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { toast } from 'react-toastify';
 
 const AuthContext = createContext(null);
 
@@ -25,8 +26,12 @@ export const AuthProvider = ({ children }) => {
 
   const logout = () => {
     localStorage.removeItem('admin-token');
+    localStorage.removeItem('admin'); // Also remove admin details if stored
     setIsAuthenticated(false);
-    navigate('/login');
+    toast.success('Logged out successfully!');
+    // Delay navigation to allow the toast to be seen
+    // The navigate call is wrapped in a timeout
+    setTimeout(() => navigate('/login'), 500);
   };
 
   const value = { isAuthenticated, isLoading, logout, login: verifyAuth };
