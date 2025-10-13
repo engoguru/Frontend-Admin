@@ -161,6 +161,21 @@ const Home = () => {
             <FaImage size={20} />
             <span className={`whitespace-nowrap transition-all duration-200 overflow-hidden ${(isSidebarOpen || isMobileSidebarOpen) ? 'opacity-100 ml-3 w-auto' : 'opacity-0 w-0'}`}>Banners</span>
           </NavLink>
+
+
+          {/* added by amit  */}
+
+
+            <NavLink
+            to="/coupon"
+            style={({ isActive }) => (isActive ? activeLinkStyle : undefined)}
+            className={`flex items-center text-gray-700 hover:text-blue-600 hover:bg-blue-50 px-3 py-2 rounded-md transition ${!(isSidebarOpen || isMobileSidebarOpen) && 'justify-center'}`}
+            title="Coupons"
+            onClick={handleMobileLinkClick}
+          >
+            <FaImage size={20} />
+            <span className={`whitespace-nowrap transition-all duration-200 overflow-hidden ${(isSidebarOpen || isMobileSidebarOpen) ? 'opacity-100 ml-3 w-auto' : 'opacity-0 w-0'}`}>Coupons</span>
+          </NavLink>
         </nav>
       </aside>
 

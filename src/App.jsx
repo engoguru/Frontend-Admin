@@ -12,6 +12,7 @@ import OrderDetail from './pages/OrderDetail';
 import Orders from './pages/Orders';
 import ProtectedRoute from './components/ProtectedRoute';
 import Banners from './pages/Banners';
+import Coupon from './pages/Coupon';
 
 function App() {
   return (
@@ -29,6 +30,7 @@ function App() {
               <Route path="orders/:id" element={<OrderDetail />} />
               <Route path="orders" element={<Orders />} />
               <Route path="banners" element={<Banners />} />
+               <Route path="coupon" element={<Coupon />} />
             </Route>
           </Route>
         </Routes>
