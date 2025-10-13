@@ -156,8 +156,12 @@ const ProductDetail = () => {
                                 <tr>
                                     <th className="py-2 px-4 border text-left">SKU</th>
                                     <th className="py-2 px-4 border text-left">Size</th>
-                                    <th className="py-2 px-4 border text-left">Color</th>
-                                    <th className="py-2 px-4 border text-left">Flavor</th>
+                                    {product.productCategory !== 'Nutrition' && (
+                                        <th className="py-2 px-4 border text-left">Color</th>
+                                    )}
+                                    {product.productCategory === 'Nutrition' && (
+                                        <th className="py-2 px-4 border text-left">Flavor</th>
+                                    )}
                                     <th className="py-2 px-4 border text-right">Stock</th>
                                     <th className="py-2 px-4 border text-right">Discount</th>
                                     <th className="py-2 px-4 border text-right">Price</th>
@@ -169,12 +173,16 @@ const ProductDetail = () => {
                                         <tr key={variant._id}>
                                             <td className="py-2 px-4 border">{variant.sku}</td>
                                             <td className="py-2 px-4 border">{variant.size || 'N/A'}</td>
-                                            <td className="py-2 px-4 border">
-                                                {Array.isArray(variant.color) ? variant.color.join(', ') : (variant.color || 'N/A')}
-                                            </td>
-                                            <td className="py-2 px-4 border">
-                                                {Array.isArray(variant.flavor) ? variant.flavor.join(', ') : (variant.flavor || 'N/A')}
-                                            </td>
+                                            {product.productCategory !== 'Nutrition' && (
+                                                <td className="py-2 px-4 border">
+                                                    {Array.isArray(variant.color) ? variant.color.join(', ') : (variant.color || 'N/A')}
+                                                </td>
+                                            )}
+                                            {product.productCategory === 'Nutrition' && (
+                                                <td className="py-2 px-4 border">
+                                                    {Array.isArray(variant.flavor) ? variant.flavor.join(', ') : (variant.flavor || 'N/A')}
+                                                </td>
+                                            )}
                                             <td className="py-2 px-4 border text-right">{variant.stock}</td>
                                             <td className="py-2 px-4 border text-right">{variant.discount ? `${variant.discount}%` : '0%'}</td>
                                             <td className="py-2 px-4 border text-right">₹{variant.price.toFixed(2)}</td>
@@ -182,7 +190,7 @@ const ProductDetail = () => {
                                     ))
                                 ) : (
                                     <tr>
-                                        <td colSpan="7" className="text-center py-4">No variants found.</td>
+                                        <td colSpan="6" className="text-center py-4">No variants found.</td>
                                     </tr>
                                 )}
                             </tbody>

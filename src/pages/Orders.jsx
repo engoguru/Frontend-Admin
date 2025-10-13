@@ -96,23 +96,6 @@ const Orders = () => {
         navigate(`/orders/${orderId}`); // Adjust route as needed
     };
 
-    const handleEditClick = (orderId) => {
-        // In a real app, this would navigate to an edit page or open a modal
-        alert(`Editing order: ${orderId}`);
-        // navigate(`/orders/edit/${orderId}`);
-    };
-
-    const handleDeleteClick = (orderId) => {
-        if (window.confirm('Are you sure you want to delete this order?')) {
-            // In a real app, you would call an API to delete the order
-            // For now, we'll just refetch to simulate.
-            // Example: deleteOrderAPI(orderId).then(() => fetchOrders(...));
-            // mockOrdersDB = mockOrdersDB.filter(order => order._id !== orderId);
-            fetchOrders(currentPage, itemsPerPage, sortBy, searchTerm); // Refetch to reflect the deletion
-            alert(`Order ${orderId} deleted.`);
-        }
-    };
-
     return (
         <div className="relative flex flex-col h-full">
             <div className="flex justify-between items-center pt-8 px-8 pb-4 flex-shrink-0 flex-wrap gap-4">
@@ -179,8 +162,16 @@ const Orders = () => {
                                     <td className="py-2 px-4 border">
                                         ₹{typeof order.totalPrice === 'number' ? order.totalPrice.toFixed(2) : 'N/A'}
                                     </td>
-                                    <td className="py-2 px-4 border">
-                                        {`${order.deliveryAddress?.address_line1}, ${order.deliveryAddress?.city}, ${order.deliveryAddress?.state}`}
+                                    <td className="py-2 px-4 border text-left align-top text-sm">
+                                        {order.deliveryAddress ? (
+                                            <div>
+                                                {order.deliveryAddress.address_line1 && <p>{order.deliveryAddress.address_line1},</p>}
+                                                {order.deliveryAddress.address_line2 && <p>{order.deliveryAddress.address_line2},</p>}
+                                                <p>{order.deliveryAddress.city}, {order.deliveryAddress.state} - {order.deliveryAddress.pincode}</p>
+                                                <p>{order.deliveryAddress.country}</p>
+                                                <p className="italic text-gray-500">Type: {order.deliveryAddress.address_type}</p>
+                                            </div>
+                                        ) : 'N/A'}
                                     </td>
                                     <td className="py-2 px-4 border">{order.paymentId}</td>
                                     <td className="py-2 px-4 border">{order.paymentMethod}</td>
@@ -190,24 +181,12 @@ const Orders = () => {
                                     <td className="py-2 px-4 border">
                                         <StatusBadge text={order.orderStatus} colorClass={shippingStatusColors[order.orderStatus]} />
                                     </td>
-                                    <td className="py-2 px-4 border space-x-2">
+                                    <td className="py-2 px-4 border text-center">
                                         <button
                                             onClick={() => handleViewClick(order._id)}
                                             className="bg-blue-500 text-white px-2 py-1 rounded hover:bg-blue-600"
                                         >
                                             View
-                                        </button>
-                                        <button
-                                            onClick={() => handleEditClick(order._id)}
-                                            className="bg-yellow-500 text-white px-2 py-1 rounded hover:bg-yellow-600"
-                                        >
-                                            Edit
-                                        </button>
-                                        <button
-                                            onClick={() => handleDeleteClick(order._id)}
-                                            className="bg-red-500 text-white px-2 py-1 rounded hover:bg-red-600"
-                                        >
-                                            Delete
                                         </button>
                                     </td>
                                 </tr>
